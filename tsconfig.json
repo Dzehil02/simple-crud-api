@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "baseUrl": "src",
+        "target": "ES2020",
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "strict": true,
+        "esModuleInterop": true,
+        "outDir": "build",
+        "allowSyntheticDefaultImports": true
+    },
+    "ts-node": {
+        "esm": true
+    }
+}
