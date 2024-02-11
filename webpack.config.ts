@@ -1,6 +1,6 @@
 import path from 'path';
 import webpack from 'webpack';
-import { BuildEnv } from './types/config';
+import {BuildEnv} from './types/types';
 import dotenv from 'dotenv';
 
 dotenv.config();
