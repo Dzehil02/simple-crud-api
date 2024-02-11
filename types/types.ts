@@ -1,5 +1,7 @@
 export type BuildMode = 'production' | 'development';
 
+export type contentType = 'text/plain' | 'application/json';
+
 export interface BuildEnv {
     mode: BuildMode;
 }

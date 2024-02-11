@@ -1,66 +1,51 @@
 import http from 'http';
-import {createPassword, users} from '../store/store';
+import {users} from '../store/store';
 import {User} from '../types/types';
-import {isUser} from './validators';
+import {createPassword, isUser, setResonse} from './helpers';
 import {validate as uuidValidate} from 'uuid';
 
 export const getGreetings = (res: http.ServerResponse) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end('Hello from simple CRUD API');
+    setResonse(res, 200, 'text/plain', 'Hello from simple CRUD API');
 };
 
 export const handleNotFound = (res: http.ServerResponse) => {
-    res.statusCode = 404;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end('Not found. Available endpoints are: /, /api/users, /api/users/:id');
+    setResonse(res, 404, 'text/plain', 'Not found. Available endpoints are: /, /api/users, /api/users/:id');
 };
 
 export const getUsers = (res: http.ServerResponse) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(users));
+    setResonse(res, 200, 'application/json', users);
 };
 
 export const getUserById = (id: string, res: http.ServerResponse) => {
     try {
         if (!uuidValidate(id)) {
-            res.setHeader('Content-Type', 'text/plain');
             throw Error();
         }
+
         const user = users.find((user) => user.id === id);
 
         if (!user) {
-            res.statusCode = 404;
-            res.setHeader('Content-Type', 'text/plain');
-            res.end(`User with id ${id} not found`);
+            setResonse(res, 404, 'text/plain', `User with id ${id} not found`);
         } else {
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify(user));
+            setResonse(res, 200, 'application/json', user);
         }
     } catch (error) {
-        res.statusCode = 400;
-        res.end('User ID is invalid (not uuid)');
+        setResonse(res, 400, 'text/plain', 'User ID is invalid (not uuid)');
     }
 };
 
 export const updateUserById = (id: string, req: http.IncomingMessage, res: http.ServerResponse) => {
     try {
         if (!uuidValidate(id)) {
-            res.setHeader('Content-Type', 'text/plain');
-            res.statusCode = 400;
-            res.end('User ID is invalid (not uuid)');
+            setResonse(res, 400, 'text/plain', 'User ID is invalid (not uuid)');
             return;
         }
 
         const userIndex = users.findIndex((user) => user.id === id);
 
         if (userIndex === -1) {
-            res.statusCode = 404;
-            res.setHeader('Content-Type', 'text/plain');
-            res.end(`User with id ${id} not found`);
+            setResonse(res, 404, 'text/plain', `User with id ${id} not found`);
         } else {
-            res.setHeader('Content-Type', 'application/json');
             let userString: string = '';
             req.on('data', (data) => {
                 userString += data;
@@ -70,19 +55,14 @@ export const updateUserById = (id: string, req: http.IncomingMessage, res: http.
                     const data: Partial<User> = JSON.parse(userString);
                     const updatedUser = {...users[userIndex], ...data};
                     users[userIndex] = updatedUser;
-
-                    res.statusCode = 200;
-                    res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify(updatedUser));
+                    setResonse(res, 200, 'application/json', updatedUser);
                 } catch (error) {
-                    res.statusCode = 400;
-                    res.end('Bad request');
+                    setResonse(res, 400, 'text/plain', 'Invalid request body');
                 }
             });
         }
     } catch (error) {
-        res.statusCode = 500;
-        res.end('Internal Server Error');
+        setResonse(res, 500, 'text/plain', 'Internal Server Error');
     }
 };
 
@@ -90,53 +70,52 @@ export const removeUserById = (id: string, res: http.ServerResponse) => {
     try {
         res.setHeader('Content-Type', 'text/plain');
         if (!uuidValidate(id)) {
-            res.statusCode = 400;
-            res.end('User ID is invalid (not uuid)');
+            setResonse(res, 400, 'text/plain', 'User ID is invalid (not uuid)');
             return;
         }
 
         const userIndex = users.findIndex((user) => user.id === id);
 
         if (userIndex === -1) {
-            res.statusCode = 404;
-            res.end(`User with id ${id} not found`);
+            setResonse(res, 404, 'text/plain', `User with id ${id} not found`);
         } else {
             users.splice(userIndex, 1);
-            res.statusCode = 204;
+            setResonse(res, 204, 'text/plain', `User with id ${id} deleted`);
         }
     } catch (error) {
-        res.statusCode = 500;
-        res.end('Internal Server Error');
+        setResonse(res, 500, 'text/plain', 'Internal Server Error');
     }
 };
 
 export const postUser = (req: http.IncomingMessage, res: http.ServerResponse) => {
-    res.setHeader('Content-Type', 'application/json');
-    if (req.headers['content-type'] === 'application/json') {
+    try {
+        if (req.headers['content-type'] !== 'application/json') {
+            setResonse(res, 400, 'text/plain', 'Bad request. Content-Type must be application/json');
+            return;
+        }
         const pass = createPassword();
         let user: string = '';
         req.on('data', (data) => {
             user += data;
         });
         req.on('end', () => {
-            try {
-                const userObj: User = JSON.parse(user);
-                const userObjWithId: User = {id: pass, ...userObj};
+            const userObj: User = JSON.parse(user);
+            const userObjWithId: User = {id: pass, ...userObj};
 
-                if (!isUser(userObjWithId)) {
-                    throw Error();
-                }
-
-                users.push(userObjWithId);
-                res.statusCode = 201;
-                res.end(user);
-            } catch (error) {
-                res.statusCode = 400;
-                res.end('Bad request. Invalid data. User must have required fields: username, age, hobbies');
+            if (!isUser(userObjWithId)) {
+                setResonse(
+                    res,
+                    400,
+                    'text/plain',
+                    'Bad request. Invalid data. User must have required fields: username, age, hobbies'
+                );
+                return;
             }
+
+            users.push(userObjWithId);
+            setResonse(res, 201, 'application/json', userObjWithId);
         });
-    } else {
-        res.statusCode = 400;
-        res.end('Bad request. Data must be in JSON format');
+    } catch (error) {
+        setResonse(res, 500, 'text/plain', 'Internal Server Error');
     }
 };

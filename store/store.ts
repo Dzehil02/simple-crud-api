@@ -1,7 +1,6 @@
+import { createPassword } from '../src/helpers';
 import {User} from '../types/types';
-import {v1 as uuidv4} from 'uuid';
 
-export const createPassword = () => uuidv4();
 
 export const users: User[] = [
     {
