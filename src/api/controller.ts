@@ -8,7 +8,7 @@ import {
     updateUserById,
     removeUserById,
 } from './handlers';
-import { getUserId } from './helpers';
+import {getUserId} from '../helpers/helpers';
 
 export const controller = (req: http.IncomingMessage, res: http.ServerResponse) => {
     let userId;
@@ -27,13 +27,13 @@ export const controller = (req: http.IncomingMessage, res: http.ServerResponse) 
         }
     }
     if (req.method === 'PUT' && userId) {
-            return updateUserById(userId, req, res);
+        return updateUserById(userId, req, res);
     }
     if (req.method === 'DELETE' && userId) {
-            return removeUserById(userId, res);
+        return removeUserById(userId, res);
     }
     if (req.method === 'POST' && (req.url === '/api/users' || req.url === '/api/users/')) {
         return postUser(req, res);
     }
     return handleNotFound(res);
-}
+};

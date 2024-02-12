@@ -1,7 +1,7 @@
 import http from 'http';
 import {users} from '../store/store';
 import {User} from '../types/types';
-import {createPassword, isUser, setResonse} from './helpers';
+import {createPassword, isUser, setResonse} from '../helpers/helpers';
 import {validate as uuidValidate} from 'uuid';
 
 export const getGreetings = (res: http.ServerResponse) => {

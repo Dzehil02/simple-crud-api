@@ -8,7 +8,7 @@ export const getUserId = (url: string) => {
     if (url.split('/').length <= 4) {
         return url.split('/')[3];
     }
-}
+};
 export function isUser(obj: any): obj is User {
     return (
         typeof obj.id === 'string' &&

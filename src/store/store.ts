@@ -1,6 +1,5 @@
-import { createPassword } from '../src/helpers';
+import {createPassword} from '../helpers/helpers';
 import {User} from '../types/types';
-
 
 export const users: User[] = [
     {

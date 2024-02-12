@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import http from 'http';
-import { controller } from './controller';
+import {controller} from './api/controller';
 
 dotenv.config();
 const PORT = process.env.PORT || 5050;
