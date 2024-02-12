@@ -5,7 +5,7 @@ import {controller} from './api/controller';
 dotenv.config();
 const PORT = process.env.PORT || 5050;
 
-const server = http.createServer((req, res) => {
+export const server = http.createServer((req, res) => {
     controller(req, res);
 });
 
