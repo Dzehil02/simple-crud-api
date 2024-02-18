@@ -99,21 +99,27 @@ export const postUser = (req: http.IncomingMessage, res: http.ServerResponse) =>
             user += data;
         });
         req.on('end', () => {
-            const userObj: User = JSON.parse(user);
-            const userObjWithId: User = {id: pass, ...userObj};
+            try {
+                const userObj: User = JSON.parse(user);
+                const userObjWithId: User = {id: pass, ...userObj};
 
-            if (!isUser(userObjWithId)) {
-                setResonse(
-                    res,
-                    400,
-                    'text/plain',
-                    'Bad request. Invalid data. User must have required fields: username, age, hobbies'
-                );
-                return;
+                if (!isUser(userObjWithId)) {
+                    setResonse(
+                        res,
+                        400,
+                        'text/plain',
+                        'Bad request. Invalid data. User must have required fields: username, age, hobbies'
+                    );
+                    return;
+                }
+
+                users.push(userObjWithId);
+                setResonse(res, 201, 'application/json', userObjWithId);
+            } catch (error) {
+                setResonse(res, 500, 'application/json', {
+                    message: 'Oopps Internal Server Error',
+                });
             }
-
-            users.push(userObjWithId);
-            setResonse(res, 201, 'application/json', userObjWithId);
         });
     } catch (error) {
         setResonse(res, 500, 'text/plain', 'Internal Server Error');
